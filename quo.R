@@ -1,6 +1,15 @@
 # Why is enquo() important?
 
 library(rlang)
+library(magrittr)
+
+q <- function(...) {
+  enquos(...)
+}
+
+e <- function(...) {
+  enexprs(...)
+}
 
 qq <- function(...) {
   q <- enquos(...)
@@ -23,12 +32,20 @@ f <- function() {
   b <- 4
 
   list(
+    q = q(a + b, a + 2, a + !!b, !!a + !!b),
+    e = e(a + b, a + 2, a + !!b, !!a + !!b),
     qq = qq(a + b, a + 2, a + !!b, !!a + !!b),
     ee = ee(a + b, a + 2, a + !!b, !!a + !!b)
   )
 }
 
 f()
+
+lapply(f()$q, eval_tidy)
+lapply(f()$e, eval_tidy)
+
+q13 <- c(f()$q[1], f()$q[3])
+lapply(q13, eval_tidy)
 
 tibble::tibble(
   qq = qq(a + b, a + 2, a + !!b, !!a + !!b),
